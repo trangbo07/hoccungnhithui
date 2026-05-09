@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Cùng Nhi Thúi 🐰 - Lịch Sử Đảng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Pangolin&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Quicksand', sans-serif;
+        }
+        .title-font {
+            font-family: 'Pangolin', cursive;
+        }
+        body {
+            background: linear-gradient(135deg, #FFFDD0 0%, #FFE4E1 100%);
+            min-height: 100vh;
+        }
+        .card-glow {
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
+        }
+        .pink-gradient {
+            background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+        }
+        .flip-card {
+            perspective: 1000px;
+            height: 300px;
+            cursor: pointer;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-radius: 20px;
+            border: 3px solid #FF69B4;
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
+        }
+        .flip-card-front {
+            background: linear-gradient(135deg, #FFE4E1 0%, #FFF0F5 100%);
+            color: #FF1493;
+        }
+        .flip-card-back {
+            background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+            color: #C71585;
+            transform: rotateY(180deg);
+            text-align: center;
+        }
+        .sparkle {
+            animation: sparkle 0.6s ease-in-out;
+        }
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+        .floating {
+            animation: floating 0.3s ease-out;
+        }
+        @keyframes floating {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+        .option-btn {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .option-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(255, 105, 180, 0.4);
+        }
+        .option-btn.correct {
+            background-color: #90EE90 !important;
+            animation: correctPulse 0.6s ease-out;
+        }
+        .option-btn.wrong {
+            background-color: #FFB6C1 !important;
+            animation: wrongShake 0.4s ease-out;
+        }
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .progress-cat {
+            animation: catWalk 2s infinite;
+            transition: left 0.3s ease-out;
+        }
+        @keyframes catWalk {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .badge-shine {
+            animation: badge-glow 1.5s ease-in-out infinite;
+        }
+        @keyframes badge-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 1); }
+        }
+        .mini-notification {
+            animation: slideUp 0.4s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .search-input {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #FFB6C1;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #FF69B4;
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4);
+        }
+        .tab-inactive {
+            background: rgba(255, 255, 255, 0.6);
+            color: #FF69B4;
+            border: 2px solid #FFB6C1;
+        }
+        .star-icon {
+            transition: all 0.3s;
+        }
+        .star-icon.marked {
+            color: #FFD700;
+            filter: drop-shadow(0 0 4px #FFD700);
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen pb-20">
+        <!-- Header -->
+        <header class="pink-gradient text-white py-6 shadow-lg sticky top-0 z-50">
+            <div class="container mx-auto px-4">
+                <h1 class="title-font text-4xl font-bold text-center mb-2 flex items-center justify-center gap-2">
+                    <span>🐰 Học Cùng Nhi Thúi</span>
+                </h1>
+                <p class="text-center text-sm opacity-90">Lịch Sử Đảng - 225 Câu Hỏi Siêu Đáng Yêu</p>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <main class="container mx-auto px-4 py-6">
+            <!-- Navigation Tabs -->
+            <div id="navTabs" class="flex gap-2 mb-6 overflow-x-auto pb-2">
+                <button class="tab-btn tab-active px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="home">
+                    <i class="fas fa-home mr-2"></i>Trang Chủ
+                </button>
+                <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="flashcard">
+                    <i class="fas fa-layer-group mr-2"></i>Flashcard
+                </button>
+                <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="quiz">
+                    <i class="fas fa-pencil-alt mr-2"></i>Trắc Nghiệm
+                </button>
+                <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="marked">
+                    <i class="fas fa-star mr-2"></i>Câu Của Nhi
+                </button>
+                <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="search">
+                    <i class="fas fa-search mr-2"></i>Tìm Kiếm
+                </button>
+            </div>
+
+            <!-- HOME TAB -->
+            <div id="homeTab" class="tab-content">
+                <!-- Progress Section -->
+                <div class="mb-8 bg-white rounded-3xl p-6 card-glow">
+                    <h2 class="text-2xl font-bold text-pink-600 mb-4">
+                        <i class="fas fa-chart-line mr-2"></i>Tiến Độ Học Tập
+                    </h2>
+                    
+                    <!-- Progress Bar with Cat -->
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="font-semibold text-gray-700">Đã Học: <span id="progressCount">0</span>/225</span>
+                            <span class="text-sm text-gray-600"><span id="progressPercent">0</span>%</span>
+                        </div>
+                        <div class="relative h-8 bg-gradient-to-r from-pink-100 to-pink-200 rounded-full border-2 border-pink-300 overflow-hidden">
+                            <div id="progressBar" class="h-full bg-gradient-to-r from-pink-400 to-pink-500 rounded-full transition-all duration-500 flex items-center justify-end pr-3" style="width: 0%">
+                                <span class="text-xl progress-cat">🐱</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Badges -->
+                    <div class="mb-4">
+                        <h3 class="font-bold text-gray-700 mb-3">🏆 Danh Hiệu Đạt Được</h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div id="badge1" class="text-center p-3 rounded-2xl bg-gradient-to-br from-yellow-100 to-yellow-200 opacity-50 transition" style="border: 2px solid #FFD700;">
+                                <div class="text-3xl mb-1">🌱</div>
+                                <p class="text-xs font-bold text-yellow-800">Mầm Non (50)</p>
+                            </div>
+                            <div id="badge2" class="text-center p-3 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 opacity-50 transition" style="border: 2px solid #FF8C00;">
+                                <div class="text-3xl mb-1">⚔️</div>
+                                <p class="text-xs font-bold text-orange-800">Chiến Thần (150)</p>
+                            </div>
+                            <div id="badge3" class="text-center p-3 rounded-2xl bg-gradient-to-br from-red-100 to-red-200 opacity-50 transition" style="border: 2px solid #FF1493;">
+                                <div class="text-3xl mb-1">👑</div>
+                                <p class="text-xs font-bold text-red-800">Trùm Lịch Sử (225)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <div class="bg-blue-50 rounded-2xl p-4 border-2 border-blue-300">
+                            <div class="text-3xl font-bold text-blue-600" id="statMarked">0</div>
+                            <p class="text-sm text-blue-700">Câu Đánh Dấu</p>
+                        </div>
+                        <div class="bg-green-50 rounded-2xl p-4 border-2 border-green-300">
+                            <div class="text-3xl font-bold text-green-600" id="statCompleted">0</div>
+                            <p class="text-sm text-green-700">Đã Hoàn Thành</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-2 gap-4">
+                    <button id="btnResumeFlashcard" class="pink-gradient text-white py-4 rounded-3xl font-bold text-lg shadow-lg hover:shadow-xl transition transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>Tiếp Tục Flashcard
+                    </button>
+                    <button id="btnResumeQuiz" class="pink-gradient text-white py-4 rounded-3xl font-bold text-lg shadow-lg hover:shadow-xl transition transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>Tiếp Tục Quiz
+                    </button>
+                </div>
+            </div>
+
+            <!-- FLASHCARD TAB -->
+            <div id="flashcardTab" class="tab-content hidden">
+                <div class="max-w-2xl mx-auto">
+                    <!-- Flashcard Navigation -->
+                    <div class="flex justify-between items-center mb-4 bg-white rounded-2xl p-4 card-glow">
+                        <button id="btnPrevFlash" class="bg-pink-200 text-pink-600 px-4 py-2 rounded-lg font-semibold hover:bg-pink-300 transition">
+                            <i class="fas fa-chevron-left"></i> Trước
+                        </button>
+                        <span class="font-bold text-pink-600">
+                            <span id="flashcardIndex">1</span>/<span id="flashcardTotal">225</span>
+                        </span>
+                        <button id="btnNextFlash" class="bg-pink-200 text-pink-600 px-4 py-2 rounded-lg font-semibold hover:bg-pink-300 transition">
+                            Tiếp <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Flashcard -->
+                    <div id="flashcard" class="flip-card mb-6">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="text-center">
+                                    <p class="text-sm text-pink-500 mb-3 font-semibold">Bấm vào thẻ để xem đáp án</p>
+                                    <p id="flashcardQuestion" class="text-lg font-bold text-pink-600">Câu hỏi</p>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="text-center w-full">
+                                    <p class="text-sm text-white mb-3 font-semibold">✅ Đáp Án: <span id="flashcardAnswer" class="text-xl font-bold">A</span></p>
+                                    <div id="flashcardOptions" class="space-y-2 text-sm">
+                                        <!-- Options will be injected here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flashcard Actions -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="btnMarkFlash" class="bg-yellow-100 border-2 border-yellow-400 text-yellow-700 py-3 rounded-2xl font-bold text-lg hover:bg-yellow-200 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-star"></i>Đánh Dấu
+                        </button>
+                        <button id="btnRemembered" class="bg-green-100 border-2 border-green-400 text-green-700 py-3 rounded-2xl font-bold text-lg hover:bg-green-200 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-heart"></i>Thuộc Rồi
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUIZ TAB -->
+            <div id="quizTab" class="tab-content hidden">
+                <div class="max-w-2xl mx-auto">
+                    <!-- Quiz Progress -->
+                    <div class="mb-6 bg-white rounded-3xl p-6 card-glow">
+                        <h3 class="text-lg font-bold text-pink-600 mb-3">📊 Tiến Độ Quiz</h3>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-semibold text-gray-700">Đã Làm: <span id="quizDone">0</span>/225</span>
+                            <span class="text-sm text-gray-600"><span id="quizPercent">0</span>%</span>
+                        </div>
+                        <div class="relative h-8 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full border-2 border-blue-300 overflow-hidden">
+                            <div id="quizProgressBar" class="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full transition-all duration-500 flex items-center justify-end pr-3" style="width: 0%">
+                                <span class="text-xl progress-cat">🎯</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Navigation -->
+                    <div class="flex justify-between items-center mb-4 bg-white rounded-2xl p-4 card-glow">
+                        <button id="btnPrevQuiz" class="bg-pink-200 text-pink-600 px-4 py-2 rounded-lg font-semibold hover:bg-pink-300 transition">
+                            <i class="fas fa-chevron-left"></i> Trước
+                        </button>
+                        <span class="font-bold text-pink-600">
+                            <span id="quizIndex">1</span>/<span id="quizTotal">225</span>
+                        </span>
+                        <button id="btnNextQuiz" class="bg-pink-200 text-pink-600 px-4 py-2 rounded-lg font-semibold hover:bg-pink-300 transition">
+                            Tiếp <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Quiz Question -->
+                    <div class="bg-white rounded-3xl p-6 card-glow mb-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 id="quizQuestion" class="text-lg font-bold text-pink-600 flex-1">Câu hỏi?</h3>
+                            <button id="btnMarkQuiz" class="ml-2 text-2xl star-icon">
+                                <i class="far fa-star"></i>
+                            </button>
+                        </div>
+
+                        <!-- Options -->
+                        <div class="space-y-3">
+                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-transparent text-gray-700" data-option="A">
+                                <span class="mr-3 font-bold">A.</span><span class="option-text"></span>
+                            </button>
+                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-transparent text-gray-700" data-option="B">
+                                <span class="mr-3 font-bold">B.</span><span class="option-text"></span>
+                            </button>
+                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-transparent text-gray-700" data-option="C">
+                                <span class="mr-3 font-bold">C.</span><span class="option-text"></span>
+                            </button>
+                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-transparent text-gray-700" data-option="D">
+                                <span class="mr-3 font-bold">D.</span><span class="option-text"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div id="quizFeedback" class="hidden text-center mb-6 mini-notification">
+                        <div class="text-5xl mb-2" id="feedbackIcon">🎉</div>
+                        <p id="feedbackText" class="font-bold text-lg text-green-600">Chính xác!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MARKED QUESTIONS TAB -->
+            <div id="markedTab" class="tab-content hidden">
+                <div>
+                    <h2 class="text-2xl font-bold text-pink-600 mb-4">
+                        <i class="fas fa-star mr-2"></i>Câu Hỏi Của Nhi
+                    </h2>
+                    <div id="markedList" class="space-y-3">
+                        <!-- Marked questions will be listed here -->
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-3 block opacity-50"></i>
+                            <p>Chưa có câu hỏi nào được đánh dấu</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEARCH TAB -->
+            <div id="searchTab" class="tab-content hidden">
+                <div>
+                    <h2 class="text-2xl font-bold text-pink-600 mb-4">
+                        <i class="fas fa-search mr-2"></i>Tìm Kiếm Câu Hỏi
+                    </h2>
+                    <div class="mb-6">
+                        <input id="searchInput" type="text" placeholder="Nhập từ khóa..." class="search-input w-full px-4 py-3 text-gray-700">
+                    </div>
+                    <div id="searchResults" class="space-y-3">
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-search text-4xl mb-3 block opacity-50"></i>
+                            <p>Nhập từ khóa để tìm kiếm</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success Notification -->
+    <div id="notification" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 hidden mini-notification">
+        <div class="bg-white rounded-3xl px-6 py-4 card-glow flex items-center gap-3 text-lg font-bold">
+            <span id="notificationIcon">✅</span>
+            <span id="notificationText">Đã lưu!</span>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DATA & STATE ====================
+        let database = null;
+        let state = {
+            currentFlashcardIndex: 0,
+            currentQuizIndex: 0,
+            completed: new Set(),
+            marked: new Set(),
+            quizAnswers: new Map(),
+            currentTab: 'home'
+        };
+
+        // ==================== INITIALIZE ====================
+        async function init() {
+            try {
+                const response = await fetch('database.json');
+                database = await response.json();
+                loadState();
+                renderHome();
+                setupEventListeners();
+            } catch (e) {
+                console.error('Error loading database:', e);
+                alert('Lỗi: Không thể tải dữ liệu');
+            }
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('hocLichSuState');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state.currentFlashcardIndex = parsed.currentFlashcardIndex || 0;
+                state.currentQuizIndex = parsed.currentQuizIndex || 0;
+                state.completed = new Set(parsed.completed || []);
+                state.marked = new Set(parsed.marked || []);
+                state.quizAnswers = new Map(parsed.quizAnswers || []);
+            }
+        }
+
+        function saveState() {
+            const toSave = {
+                currentFlashcardIndex: state.currentFlashcardIndex,
+                currentQuizIndex: state.currentQuizIndex,
+                completed: Array.from(state.completed),
+                marked: Array.from(state.marked),
+                quizAnswers: Array.from(state.quizAnswers)
+            };
+            localStorage.setItem('hocLichSuState', JSON.stringify(toSave));
+        }
+
+        // ==================== UI HELPERS ====================
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('tab-inactive');
+            });
+            event.target.closest('.tab-btn').classList.add('tab-active');
+            event.target.closest('.tab-btn').classList.remove('tab-inactive');
+            
+            state.currentTab = tabName;
+        }
+
+        function updateProgress() {
+            const completed = state.completed.size;
+            const percent = Math.round((completed / 225) * 100);
+            document.getElementById('progressCount').textContent = completed;
+            document.getElementById('progressPercent').textContent = percent;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('statCompleted').textContent = completed;
+            document.getElementById('statMarked').textContent = state.marked.size;
+
+            // Update badges
+            document.getElementById('badge1').style.opacity = completed >= 50 ? '1' : '0.5';
+            document.getElementById('badge2').style.opacity = completed >= 150 ? '1' : '0.5';
+            document.getElementById('badge3').style.opacity = completed >= 225 ? '1' : '0.5';
+            
+            if (completed >= 50) document.getElementById('badge1').classList.add('badge-shine');
+            if (completed >= 150) document.getElementById('badge2').classList.add('badge-shine');
+            if (completed >= 225) document.getElementById('badge3').classList.add('badge-shine');
+        }
+
+        function showNotification(text, icon = '✅') {
+            const notif = document.getElementById('notification');
+            document.getElementById('notificationText').textContent = text;
+            document.getElementById('notificationIcon').textContent = icon;
+            notif.classList.remove('hidden');
+            setTimeout(() => notif.classList.add('hidden'), 2000);
+        }
+
+        // ==================== HOME TAB ====================
+        function renderHome() {
+            updateProgress();
+            document.getElementById('btnResumeFlashcard').onclick = () => {
+                document.querySelector('[data-tab="flashcard"]').click();
+                renderFlashcard();
+            };
+            document.getElementById('btnResumeQuiz').onclick = () => {
+                document.querySelector('[data-tab="quiz"]').click();
+                renderQuiz();
+            };
+        }
+
+        // ==================== FLASHCARD TAB ====================
+        function renderFlashcard() {
+            const q = database.questions[state.currentFlashcardIndex];
+            document.getElementById('flashcardQuestion').textContent = q.question;
+            document.getElementById('flashcardAnswer').textContent = q.answer;
+            document.getElementById('flashcardIndex').textContent = state.currentFlashcardIndex + 1;
+            document.getElementById('flashcardTotal').textContent = database.questions.length;
+            
+            // Render options on back side
+            const optionsHTML = q.options.map((opt, idx) => {
+                const letter = String.fromCharCode(65 + idx);
+                const isCorrect = letter === q.answer;
+                return `
+                    <div class="p-2 rounded-lg ${isCorrect ? 'bg-green-300 text-green-900 font-bold' : 'bg-white bg-opacity-80 text-gray-700'}">
+                        <span class="font-bold">${letter}.</span> ${opt.substring(3)}
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('flashcardOptions').innerHTML = optionsHTML;
+            
+            // Reset flip
+            document.getElementById('flashcard').classList.remove('flipped');
+            
+            // Update mark button
+            const isMarked = state.marked.has(state.currentFlashcardIndex);
+            document.getElementById('btnMarkFlash').innerHTML = isMarked 
+                ? '<i class="fas fa-star"></i>Bỏ Đánh Dấu' 
+                : '<i class="far fa-star"></i>Đánh Dấu';
+        }
+
+        document.getElementById('flashcard').addEventListener('click', function() {
+            this.classList.toggle('flipped');
+        });
+
+        document.getElementById('btnPrevFlash').addEventListener('click', () => {
+            if (state.currentFlashcardIndex > 0) {
+                state.currentFlashcardIndex--;
+                renderFlashcard();
+                saveState();
+            }
+        });
+
+        document.getElementById('btnNextFlash').addEventListener('click', () => {
+            if (state.currentFlashcardIndex < database.questions.length - 1) {
+                state.currentFlashcardIndex++;
+                renderFlashcard();
+                saveState();
+            }
+        });
+
+        document.getElementById('btnMarkFlash').addEventListener('click', function() {
+            if (state.marked.has(state.currentFlashcardIndex)) {
+                state.marked.delete(state.currentFlashcardIndex);
+            } else {
+                state.marked.add(state.currentFlashcardIndex);
+            }
+            renderFlashcard();
+            saveState();
+            updateProgress();
+            showNotification(state.marked.has(state.currentFlashcardIndex) ? '⭐ Đã đánh dấu!' : '⭐ Bỏ đánh dấu');
+        });
+
+        document.getElementById('btnRemembered').addEventListener('click', () => {
+            state.completed.add(state.currentFlashcardIndex);
+            saveState();
+            updateProgress();
+            showNotification('❤️ Tuyệt vời!');
+            if (state.currentFlashcardIndex < database.questions.length - 1) {
+                state.currentFlashcardIndex++;
+                renderFlashcard();
+            }
+        });
+
+        // ==================== QUIZ TAB ====================
+        function renderQuiz() {
+            const q = database.questions[state.currentQuizIndex];
+            document.getElementById('quizQuestion').textContent = q.question;
+            document.getElementById('quizIndex').textContent = state.currentQuizIndex + 1;
+            document.getElementById('quizTotal').textContent = database.questions.length;
+            
+            // Update quiz progress
+            const quizDone = state.completed.size;
+            const quizPercent = Math.round((quizDone / 225) * 100);
+            document.getElementById('quizDone').textContent = quizDone;
+            document.getElementById('quizPercent').textContent = quizPercent;
+            document.getElementById('quizProgressBar').style.width = quizPercent + '%';
+            
+            // Update options
+            document.querySelectorAll('.quiz-option').forEach((btn, i) => {
+                btn.classList.remove('correct', 'wrong', 'disabled');
+                btn.disabled = false;
+                const optionLetter = String.fromCharCode(65 + i);
+                btn.querySelector('.option-text').textContent = q.options[i].substring(3);
+            });
+            
+            // Hide feedback
+            document.getElementById('quizFeedback').classList.add('hidden');
+            
+            // Update mark button
+            const isMarked = state.marked.has(state.currentQuizIndex);
+            document.getElementById('btnMarkQuiz').className = isMarked ? 'fas fa-star star-icon marked' : 'far fa-star star-icon';
+        }
+
+        document.querySelectorAll('.quiz-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.disabled) return;
+                
+                const selected = this.dataset.option;
+                const correct = database.questions[state.currentQuizIndex].answer;
+                const isCorrect = selected === correct;
+                
+                // Disable all options
+                document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+                
+                // Mark selected
+                if (isCorrect) {
+                    this.classList.add('correct');
+                    document.getElementById('feedbackIcon').textContent = '🎉';
+                    document.getElementById('feedbackText').textContent = 'Chính xác! 🌟';
+                    document.getElementById('feedbackText').className = 'font-bold text-lg text-green-600';
+                    state.completed.add(state.currentQuizIndex);
+                } else {
+                    this.classList.add('wrong');
+                    document.querySelectorAll('.quiz-option').forEach(b => {
+                        if (b.dataset.option === correct) b.classList.add('correct');
+                    });
+                    document.getElementById('feedbackIcon').textContent = '😿';
+                    document.getElementById('feedbackText').textContent = 'Sai rồi, cố gắng lần sau!';
+                    document.getElementById('feedbackText').className = 'font-bold text-lg text-red-600';
+                }
+                
+                saveState();
+                updateProgress();
+                document.getElementById('quizFeedback').classList.remove('hidden');
+            });
+        });
+
+        document.getElementById('btnPrevQuiz').addEventListener('click', () => {
+            if (state.currentQuizIndex > 0) {
+                state.currentQuizIndex--;
+                renderQuiz();
+                saveState();
+            }
+        });
+
+        document.getElementById('btnNextQuiz').addEventListener('click', () => {
+            if (state.currentQuizIndex < database.questions.length - 1) {
+                state.currentQuizIndex++;
+                renderQuiz();
+                saveState();
+            }
+        });
+
+        document.getElementById('btnMarkQuiz').addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (state.marked.has(state.currentQuizIndex)) {
+                state.marked.delete(state.currentQuizIndex);
+                this.className = 'far fa-star star-icon';
+            } else {
+                state.marked.add(state.currentQuizIndex);
+                this.className = 'fas fa-star star-icon marked';
+            }
+            saveState();
+            updateProgress();
+            showNotification(state.marked.has(state.currentQuizIndex) ? '⭐ Đã đánh dấu!' : '⭐ Bỏ đánh dấu');
+        });
+
+        // ==================== MARKED QUESTIONS TAB ====================
+        function renderMarked() {
+            const container = document.getElementById('markedList');
+            if (state.marked.size === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-3 block opacity-50"></i>
+                        <p>Chưa có câu hỏi nào được đánh dấu</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = Array.from(state.marked).map(idx => {
+                const q = database.questions[idx];
+                return `
+                    <div class="bg-white rounded-2xl p-4 card-glow">
+                        <p class="font-semibold text-pink-600 mb-2">Câu ${idx + 1}</p>
+                        <p class="text-gray-700 mb-2">${q.question}</p>
+                        <p class="text-sm text-green-600 font-bold">✅ Đáp án: ${q.answer}</p>
+                        <button onclick="viewQuestionDetail(${idx})" class="mt-2 text-pink-600 text-sm font-semibold hover:text-pink-700">
+                            📖 Xem Chi Tiết
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== SEARCH TAB ====================
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const keyword = this.value.toLowerCase().trim();
+            const container = document.getElementById('searchResults');
+            
+            if (keyword === '') {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-search text-4xl mb-3 block opacity-50"></i>
+                        <p>Nhập từ khóa để tìm kiếm</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const results = database.questions
+                .map((q, idx) => ({ q, idx }))
+                .filter(({ q }) => 
+                    q.question.toLowerCase().includes(keyword) ||
+                    q.answer.toLowerCase().includes(keyword) ||
+                    q.options.some(opt => opt.toLowerCase().includes(keyword))
+                );
+            
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-search text-4xl mb-3 block opacity-50"></i>
+                        <p>Không tìm thấy kết quả</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = results.map(({ q, idx }) => `
+                <div class="bg-white rounded-2xl p-4 card-glow cursor-pointer hover:shadow-xl transition" onclick="jumpToQuestion(${idx})">
+                    <p class="font-semibold text-pink-600 mb-2">Câu ${idx + 1}</p>
+                    <p class="text-gray-700 text-sm mb-2">${q.question}</p>
+                    <p class="text-sm text-green-600 font-bold">✅ ${q.answer}</p>
+                </div>
+            `).join('');
+        });
+
+        function jumpToQuestion(idx) {
+            state.currentQuizIndex = idx;
+            document.querySelector('[data-tab="quiz"]').click();
+            renderQuiz();
+        }
+
+        // ==================== TAB NAVIGATION ====================
+        function setupEventListeners() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    showTab(tabName);
+                    
+                    if (tabName === 'home') renderHome();
+                    else if (tabName === 'flashcard') renderFlashcard();
+                    else if (tabName === 'quiz') renderQuiz();
+                    else if (tabName === 'marked') renderMarked();
+                });
+            });
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
