@@ -17,6 +17,7 @@
         body {
             background: linear-gradient(135deg, #FFFDD0 0%, #FFE4E1 100%);
             min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom);
         }
         .card-glow {
             box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
@@ -26,7 +27,8 @@
         }
         .flip-card {
             perspective: 1000px;
-            height: 300px;
+            min-height: 360px;
+            height: auto;
             cursor: pointer;
         }
         .flip-card-inner {
@@ -45,12 +47,13 @@
             height: 100%;
             backface-visibility: hidden;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-start;
+            justify-content: flex-start;
             padding: 20px;
             border-radius: 20px;
             border: 3px solid #FF69B4;
             box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
+            overflow-y: auto;
         }
         .flip-card-front {
             background: linear-gradient(135deg, #FFE4E1 0%, #FFF0F5 100%);
@@ -77,10 +80,13 @@
             100% { transform: translateY(-8px); }
         }
         .option-btn {
+            border: 2px solid #F9A8D4;
+            background: linear-gradient(135deg, #FFF7FB 0%, #FFF0F6 100%);
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .option-btn:hover {
             transform: translateY(-4px);
+            border-color: #EC4899;
             box-shadow: 0 8px 16px rgba(255, 105, 180, 0.4);
         }
         .option-btn.correct {
@@ -151,13 +157,61 @@
             color: #FFD700;
             filter: drop-shadow(0 0 4px #FFD700);
         }
+
+        .ios-safe {
+            padding-left: max(1rem, env(safe-area-inset-left));
+            padding-right: max(1rem, env(safe-area-inset-right));
+        }
+
+        @media (max-width: 430px) {
+            header {
+                padding-top: calc(0.75rem + env(safe-area-inset-top));
+                padding-bottom: 0.75rem;
+            }
+
+            .title-font {
+                font-size: 1.65rem !important;
+                line-height: 1.2;
+            }
+
+            main.container {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+                padding-top: 0.75rem;
+            }
+
+            .tab-btn {
+                padding: 0.55rem 0.9rem !important;
+                font-size: 0.85rem;
+            }
+
+            .flip-card {
+                min-height: 460px;
+            }
+
+            .flip-card-front,
+            .flip-card-back {
+                padding: 14px;
+            }
+
+            #quizQuestion,
+            #mockQuestion {
+                font-size: 1rem !important;
+                line-height: 1.55;
+                word-break: break-word;
+            }
+
+            .progress-cat {
+                animation-duration: 2.8s;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="app" class="min-h-screen pb-20">
         <!-- Header -->
         <header class="pink-gradient text-white py-6 shadow-lg sticky top-0 z-50">
-            <div class="container mx-auto px-4">
+            <div class="container mx-auto px-4 ios-safe">
                 <h1 class="title-font text-4xl font-bold text-center mb-2 flex items-center justify-center gap-2">
                     <span>🐰 Học Cùng Nhi Thúi</span>
                 </h1>
@@ -166,17 +220,17 @@
         </header>
 
         <!-- Main Container -->
-        <main class="container mx-auto px-4 py-6">
+        <main class="container mx-auto px-4 py-6 ios-safe">
             <!-- Navigation Tabs -->
             <div id="navTabs" class="flex gap-2 mb-6 overflow-x-auto pb-2">
                 <button class="tab-btn tab-active px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="home">
                     <i class="fas fa-home mr-2"></i>Trang Chủ
                 </button>
-                <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="flashcard">
-                    <i class="fas fa-layer-group mr-2"></i>Flashcard
-                </button>
                 <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="quiz">
                     <i class="fas fa-pencil-alt mr-2"></i>Trắc Nghiệm
+                </button>
+                <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="mock">
+                    <i class="fas fa-stopwatch mr-2"></i>Thi Thử
                 </button>
                 <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="marked">
                     <i class="fas fa-star mr-2"></i>Câu Của Nhi
@@ -241,60 +295,12 @@
 
                 <!-- Quick Actions -->
                 <div class="grid grid-cols-2 gap-4">
-                    <button id="btnResumeFlashcard" class="pink-gradient text-white py-4 rounded-3xl font-bold text-lg shadow-lg hover:shadow-xl transition transform hover:scale-105">
-                        <i class="fas fa-play mr-2"></i>Tiếp Tục Flashcard
-                    </button>
                     <button id="btnResumeQuiz" class="pink-gradient text-white py-4 rounded-3xl font-bold text-lg shadow-lg hover:shadow-xl transition transform hover:scale-105">
                         <i class="fas fa-play mr-2"></i>Tiếp Tục Quiz
                     </button>
-                </div>
-            </div>
-
-            <!-- FLASHCARD TAB -->
-            <div id="flashcardTab" class="tab-content hidden">
-                <div class="max-w-2xl mx-auto">
-                    <!-- Flashcard Navigation -->
-                    <div class="flex justify-between items-center mb-4 bg-white rounded-2xl p-4 card-glow">
-                        <button id="btnPrevFlash" class="bg-pink-200 text-pink-600 px-4 py-2 rounded-lg font-semibold hover:bg-pink-300 transition">
-                            <i class="fas fa-chevron-left"></i> Trước
-                        </button>
-                        <span class="font-bold text-pink-600">
-                            <span id="flashcardIndex">1</span>/<span id="flashcardTotal">225</span>
-                        </span>
-                        <button id="btnNextFlash" class="bg-pink-200 text-pink-600 px-4 py-2 rounded-lg font-semibold hover:bg-pink-300 transition">
-                            Tiếp <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-
-                    <!-- Flashcard -->
-                    <div id="flashcard" class="flip-card mb-6">
-                        <div class="flip-card-inner">
-                            <div class="flip-card-front">
-                                <div class="text-center">
-                                    <p class="text-sm text-pink-500 mb-3 font-semibold">Bấm vào thẻ để xem đáp án</p>
-                                    <p id="flashcardQuestion" class="text-lg font-bold text-pink-600">Câu hỏi</p>
-                                </div>
-                            </div>
-                            <div class="flip-card-back">
-                                <div class="text-center w-full">
-                                    <p class="text-sm text-white mb-3 font-semibold">✅ Đáp Án: <span id="flashcardAnswer" class="text-xl font-bold">A</span></p>
-                                    <div id="flashcardOptions" class="space-y-2 text-sm">
-                                        <!-- Options will be injected here -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Flashcard Actions -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <button id="btnMarkFlash" class="bg-yellow-100 border-2 border-yellow-400 text-yellow-700 py-3 rounded-2xl font-bold text-lg hover:bg-yellow-200 transition flex items-center justify-center gap-2">
-                            <i class="fas fa-star"></i>Đánh Dấu
-                        </button>
-                        <button id="btnRemembered" class="bg-green-100 border-2 border-green-400 text-green-700 py-3 rounded-2xl font-bold text-lg hover:bg-green-200 transition flex items-center justify-center gap-2">
-                            <i class="fas fa-heart"></i>Thuộc Rồi
-                        </button>
-                    </div>
+                    <button id="btnResumeMock" class="pink-gradient text-white py-4 rounded-3xl font-bold text-lg shadow-lg hover:shadow-xl transition transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>Vào Thi Thử
+                    </button>
                 </div>
             </div>
 
@@ -336,19 +342,20 @@
                                 <i class="far fa-star"></i>
                             </button>
                         </div>
+                        <p id="quizSelectHint" class="text-sm text-pink-500 mb-3">Chọn 1 đáp án</p>
 
                         <!-- Options -->
                         <div class="space-y-3">
-                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-transparent text-gray-700" data-option="A">
+                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="A">
                                 <span class="mr-3 font-bold">A.</span><span class="option-text"></span>
                             </button>
-                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-transparent text-gray-700" data-option="B">
+                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="B">
                                 <span class="mr-3 font-bold">B.</span><span class="option-text"></span>
                             </button>
-                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-transparent text-gray-700" data-option="C">
+                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="C">
                                 <span class="mr-3 font-bold">C.</span><span class="option-text"></span>
                             </button>
-                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-transparent text-gray-700" data-option="D">
+                            <button class="option-btn quiz-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="D">
                                 <span class="mr-3 font-bold">D.</span><span class="option-text"></span>
                             </button>
                         </div>
@@ -358,6 +365,115 @@
                     <div id="quizFeedback" class="hidden text-center mb-6 mini-notification">
                         <div class="text-5xl mb-2" id="feedbackIcon">🎉</div>
                         <p id="feedbackText" class="font-bold text-lg text-green-600">Chính xác!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOCK TEST TAB -->
+            <div id="mockTab" class="tab-content hidden">
+                <div class="max-w-2xl mx-auto">
+                    <div class="bg-white rounded-3xl p-6 card-glow mb-6">
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <h2 class="text-2xl font-bold text-pink-600">📝 Thi Thử</h2>
+                            <div class="bg-red-100 border-2 border-red-300 text-red-600 font-bold px-4 py-2 rounded-2xl">
+                                <i class="fas fa-clock mr-1"></i>
+                                <span id="mockTimer">50:00</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Bốc ngẫu nhiên 50 câu và làm trong 50 phút. Hết giờ sẽ tự nộp bài.</p>
+                        <div class="flex gap-3 flex-wrap">
+                            <button id="btnStartMock" class="pink-gradient text-white px-5 py-3 rounded-2xl font-bold shadow-lg">
+                                <i class="fas fa-play mr-2"></i>Bắt Đầu Thi
+                            </button>
+                            <button id="btnSubmitMock" class="bg-green-500 text-white px-5 py-3 rounded-2xl font-bold shadow-lg hidden">
+                                <i class="fas fa-paper-plane mr-2"></i>Nộp Bài
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="mockExamPanel" class="hidden">
+                        <div class="mb-4 bg-white rounded-2xl p-4 card-glow">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-semibold text-gray-700">Tiến độ: <span id="mockAnswered">0</span>/50</span>
+                                <span class="text-sm text-gray-600">Câu <span id="mockIndex">1</span>/50</span>
+                            </div>
+                            <div class="relative h-3 bg-pink-100 rounded-full overflow-hidden">
+                                <div id="mockProgressBar" class="h-full bg-gradient-to-r from-pink-400 to-pink-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-3xl p-6 card-glow mb-4">
+                            <h3 id="mockQuestion" class="text-lg font-bold text-pink-600 mb-4">Câu hỏi thi thử</h3>
+                            <p id="mockSelectHint" class="text-sm text-pink-500 mb-3">Chọn 1 đáp án</p>
+                            <div class="space-y-3">
+                                <button class="option-btn mock-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="A">
+                                    <span class="mr-3 font-bold">A.</span><span class="mock-option-text"></span>
+                                </button>
+                                <button class="option-btn mock-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="B">
+                                    <span class="mr-3 font-bold">B.</span><span class="mock-option-text"></span>
+                                </button>
+                                <button class="option-btn mock-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="C">
+                                    <span class="mr-3 font-bold">C.</span><span class="mock-option-text"></span>
+                                </button>
+                                <button class="option-btn mock-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="D">
+                                    <span class="mr-3 font-bold">D.</span><span class="mock-option-text"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between gap-3">
+                            <button id="btnPrevMock" class="bg-pink-200 text-pink-600 px-4 py-2 rounded-xl font-semibold">
+                                <i class="fas fa-chevron-left"></i> Trước
+                            </button>
+                            <button id="btnNextMock" class="bg-pink-200 text-pink-600 px-4 py-2 rounded-xl font-semibold">
+                                Tiếp <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="mockResult" class="hidden bg-white rounded-3xl p-6 card-glow text-center">
+                        <div class="text-5xl mb-3">🎓</div>
+                        <h3 class="text-2xl font-bold text-pink-600 mb-2">Kết Quả Thi Thử</h3>
+                        <p class="text-lg font-semibold text-gray-700 mb-2">Điểm: <span id="mockScore">0</span>/50</p>
+                        <p class="text-base text-gray-600 mb-4">Tỷ lệ đúng: <span id="mockPercent">0</span>%</p>
+                        <div class="grid grid-cols-2 gap-3 mb-4 text-left">
+                            <div class="bg-green-50 border-2 border-green-300 rounded-2xl p-3">
+                                <p class="text-sm text-green-700 font-semibold">✅ Câu đúng</p>
+                                <p class="text-xl font-bold text-green-600" id="mockCorrectCount">0</p>
+                            </div>
+                            <div class="bg-red-50 border-2 border-red-300 rounded-2xl p-3">
+                                <p class="text-sm text-red-700 font-semibold">❌ Câu sai</p>
+                                <p class="text-xl font-bold text-red-600" id="mockWrongCount">0</p>
+                            </div>
+                        </div>
+
+                        <div class="text-left mb-5">
+                            <div class="flex gap-2 mb-3">
+                                <button id="mockTabCorrect" onclick="setMockReviewTab('correct')" class="px-3 py-2 rounded-xl text-sm font-bold bg-green-500 text-white border-2 border-green-600">
+                                    ✅ Đáp án đúng
+                                </button>
+                                <button id="mockTabWrong" onclick="setMockReviewTab('wrong')" class="px-3 py-2 rounded-xl text-sm font-bold bg-red-100 text-red-700 border-2 border-red-300">
+                                    ❌ Đáp án sai
+                                </button>
+                            </div>
+
+                            <h4 id="mockReviewTitle" class="font-bold text-green-700 mb-2">Danh sách câu đúng (10 câu/trang)</h4>
+                            <div id="mockReviewList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+
+                            <div class="flex items-center justify-between mt-3">
+                                <button onclick="changeMockReviewPage(-1)" class="px-3 py-1 rounded-lg bg-pink-100 text-pink-700 font-semibold border border-pink-300">
+                                    <i class="fas fa-chevron-left mr-1"></i>Trang trước
+                                </button>
+                                <p class="text-sm text-gray-600">Trang <span id="mockReviewPage">1</span>/<span id="mockReviewTotalPages">1</span></p>
+                                <button onclick="changeMockReviewPage(1)" class="px-3 py-1 rounded-lg bg-pink-100 text-pink-700 font-semibold border border-pink-300">
+                                    Trang sau<i class="fas fa-chevron-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button id="btnRestartMock" class="pink-gradient text-white px-6 py-3 rounded-2xl font-bold">
+                            <i class="fas fa-rotate-right mr-2"></i>Thi Lại
+                        </button>
                     </div>
                 </div>
             </div>
@@ -410,13 +526,27 @@
         // ==================== DATA & STATE ====================
         let database = null;
         let state = {
-            currentFlashcardIndex: 0,
             currentQuizIndex: 0,
             completed: new Set(),
             marked: new Set(),
             quizAnswers: new Map(),
-            currentTab: 'home'
+            currentTab: 'home',
+            mockTest: {
+                questions: [],
+                currentIndex: 0,
+                answers: {},
+                remainingSeconds: 50 * 60,
+                isActive: false,
+                isSubmitted: false,
+                score: 0,
+                reviewCorrect: [],
+                reviewWrong: [],
+                reviewTab: 'correct',
+                reviewPage: 1
+            }
         };
+        let mockTimerInterval = null;
+        let quizPendingSelections = new Set();
 
         // ==================== INITIALIZE ====================
         async function init() {
@@ -436,7 +566,6 @@
             const saved = localStorage.getItem('hocLichSuState');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                state.currentFlashcardIndex = parsed.currentFlashcardIndex || 0;
                 state.currentQuizIndex = parsed.currentQuizIndex || 0;
                 state.completed = new Set(parsed.completed || []);
                 state.marked = new Set(parsed.marked || []);
@@ -446,7 +575,6 @@
 
         function saveState() {
             const toSave = {
-                currentFlashcardIndex: state.currentFlashcardIndex,
                 currentQuizIndex: state.currentQuizIndex,
                 completed: Array.from(state.completed),
                 marked: Array.from(state.marked),
@@ -497,98 +625,73 @@
             setTimeout(() => notif.classList.add('hidden'), 2000);
         }
 
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function parseCorrectAnswers(answerValue) {
+            if (Array.isArray(answerValue)) {
+                const letters = answerValue
+                    .map(v => String(v).toUpperCase().trim())
+                    .filter(v => ['A', 'B', 'C', 'D'].includes(v));
+                return new Set(letters.length ? letters : ['A']);
+            }
+
+            const text = String(answerValue || '').toUpperCase();
+            const letters = text.match(/[ABCD]/g) || [];
+            return new Set(letters.length ? letters : ['A']);
+        }
+
+        function normalizeSelection(selectionValue) {
+            if (Array.isArray(selectionValue)) {
+                return new Set(selectionValue.map(v => String(v).toUpperCase()));
+            }
+            if (!selectionValue) {
+                return new Set();
+            }
+            return new Set([String(selectionValue).toUpperCase()]);
+        }
+
+        function isCorrectSelection(selectedSet, correctSet) {
+            if (selectedSet.size !== correctSet.size) {
+                return false;
+            }
+            for (const option of selectedSet) {
+                if (!correctSet.has(option)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         // ==================== HOME TAB ====================
         function renderHome() {
             updateProgress();
-            document.getElementById('btnResumeFlashcard').onclick = () => {
-                document.querySelector('[data-tab="flashcard"]').click();
-                renderFlashcard();
-            };
             document.getElementById('btnResumeQuiz').onclick = () => {
                 document.querySelector('[data-tab="quiz"]').click();
                 renderQuiz();
             };
+            document.getElementById('btnResumeMock').onclick = () => {
+                document.querySelector('[data-tab="mock"]').click();
+                updateMockTimerDisplay();
+                renderMockTest();
+            };
         }
-
-        // ==================== FLASHCARD TAB ====================
-        function renderFlashcard() {
-            const q = database.questions[state.currentFlashcardIndex];
-            document.getElementById('flashcardQuestion').textContent = q.question;
-            document.getElementById('flashcardAnswer').textContent = q.answer;
-            document.getElementById('flashcardIndex').textContent = state.currentFlashcardIndex + 1;
-            document.getElementById('flashcardTotal').textContent = database.questions.length;
-            
-            // Render options on back side
-            const optionsHTML = q.options.map((opt, idx) => {
-                const letter = String.fromCharCode(65 + idx);
-                const isCorrect = letter === q.answer;
-                return `
-                    <div class="p-2 rounded-lg ${isCorrect ? 'bg-green-300 text-green-900 font-bold' : 'bg-white bg-opacity-80 text-gray-700'}">
-                        <span class="font-bold">${letter}.</span> ${opt.substring(3)}
-                    </div>
-                `;
-            }).join('');
-            document.getElementById('flashcardOptions').innerHTML = optionsHTML;
-            
-            // Reset flip
-            document.getElementById('flashcard').classList.remove('flipped');
-            
-            // Update mark button
-            const isMarked = state.marked.has(state.currentFlashcardIndex);
-            document.getElementById('btnMarkFlash').innerHTML = isMarked 
-                ? '<i class="fas fa-star"></i>Bỏ Đánh Dấu' 
-                : '<i class="far fa-star"></i>Đánh Dấu';
-        }
-
-        document.getElementById('flashcard').addEventListener('click', function() {
-            this.classList.toggle('flipped');
-        });
-
-        document.getElementById('btnPrevFlash').addEventListener('click', () => {
-            if (state.currentFlashcardIndex > 0) {
-                state.currentFlashcardIndex--;
-                renderFlashcard();
-                saveState();
-            }
-        });
-
-        document.getElementById('btnNextFlash').addEventListener('click', () => {
-            if (state.currentFlashcardIndex < database.questions.length - 1) {
-                state.currentFlashcardIndex++;
-                renderFlashcard();
-                saveState();
-            }
-        });
-
-        document.getElementById('btnMarkFlash').addEventListener('click', function() {
-            if (state.marked.has(state.currentFlashcardIndex)) {
-                state.marked.delete(state.currentFlashcardIndex);
-            } else {
-                state.marked.add(state.currentFlashcardIndex);
-            }
-            renderFlashcard();
-            saveState();
-            updateProgress();
-            showNotification(state.marked.has(state.currentFlashcardIndex) ? '⭐ Đã đánh dấu!' : '⭐ Bỏ đánh dấu');
-        });
-
-        document.getElementById('btnRemembered').addEventListener('click', () => {
-            state.completed.add(state.currentFlashcardIndex);
-            saveState();
-            updateProgress();
-            showNotification('❤️ Tuyệt vời!');
-            if (state.currentFlashcardIndex < database.questions.length - 1) {
-                state.currentFlashcardIndex++;
-                renderFlashcard();
-            }
-        });
 
         // ==================== QUIZ TAB ====================
         function renderQuiz() {
             const q = database.questions[state.currentQuizIndex];
+            const correctSet = parseCorrectAnswers(q.answer);
             document.getElementById('quizQuestion').textContent = q.question;
+            document.getElementById('quizSelectHint').textContent = `Chọn ${correctSet.size} đáp án`;
             document.getElementById('quizIndex').textContent = state.currentQuizIndex + 1;
             document.getElementById('quizTotal').textContent = database.questions.length;
+            quizPendingSelections = new Set();
             
             // Update quiz progress
             const quizDone = state.completed.size;
@@ -603,6 +706,8 @@
                 btn.disabled = false;
                 const optionLetter = String.fromCharCode(65 + i);
                 btn.querySelector('.option-text').textContent = q.options[i].substring(3);
+                btn.style.borderColor = '';
+                btn.style.backgroundColor = '';
             });
             
             // Hide feedback
@@ -618,23 +723,53 @@
                 if (this.disabled) return;
                 
                 const selected = this.dataset.option;
-                const correct = database.questions[state.currentQuizIndex].answer;
-                const isCorrect = selected === correct;
-                
-                // Disable all options
+                const correctSet = parseCorrectAnswers(database.questions[state.currentQuizIndex].answer);
+                const requiredCount = Math.max(correctSet.size, 1);
+
+                if (quizPendingSelections.has(selected)) {
+                    quizPendingSelections.delete(selected);
+                    this.style.borderColor = '';
+                    this.style.backgroundColor = '';
+                    return;
+                }
+
+                if (quizPendingSelections.size >= requiredCount) {
+                    showNotification(`Câu này chỉ chọn tối đa ${requiredCount} đáp án`, 'ℹ️');
+                    return;
+                }
+
+                quizPendingSelections.add(selected);
+                this.style.borderColor = '#EC4899';
+                this.style.backgroundColor = '#FDF2F8';
+
+                if (quizPendingSelections.size < requiredCount) {
+                    return;
+                }
+
+                // Disable all options when đủ số đáp án cần chọn
                 document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
-                
-                // Mark selected
+
+                const isCorrect = isCorrectSelection(quizPendingSelections, correctSet);
+
                 if (isCorrect) {
-                    this.classList.add('correct');
+                    document.querySelectorAll('.quiz-option').forEach(b => {
+                        if (quizPendingSelections.has(b.dataset.option)) {
+                            b.classList.add('correct');
+                        }
+                    });
                     document.getElementById('feedbackIcon').textContent = '🎉';
                     document.getElementById('feedbackText').textContent = 'Chính xác! 🌟';
                     document.getElementById('feedbackText').className = 'font-bold text-lg text-green-600';
                     state.completed.add(state.currentQuizIndex);
                 } else {
-                    this.classList.add('wrong');
                     document.querySelectorAll('.quiz-option').forEach(b => {
-                        if (b.dataset.option === correct) b.classList.add('correct');
+                        const option = b.dataset.option;
+                        if (quizPendingSelections.has(option) && !correctSet.has(option)) {
+                            b.classList.add('wrong');
+                        }
+                        if (correctSet.has(option)) {
+                            b.classList.add('correct');
+                        }
                     });
                     document.getElementById('feedbackIcon').textContent = '😿';
                     document.getElementById('feedbackText').textContent = 'Sai rồi, cố gắng lần sau!';
@@ -675,6 +810,295 @@
             saveState();
             updateProgress();
             showNotification(state.marked.has(state.currentQuizIndex) ? '⭐ Đã đánh dấu!' : '⭐ Bỏ đánh dấu');
+        });
+
+        // ==================== MOCK TEST TAB ====================
+        function updateMockTimerDisplay() {
+            const minutes = Math.floor(state.mockTest.remainingSeconds / 60);
+            const seconds = state.mockTest.remainingSeconds % 60;
+            document.getElementById('mockTimer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startMockTimer() {
+            if (mockTimerInterval) {
+                clearInterval(mockTimerInterval);
+            }
+            mockTimerInterval = setInterval(() => {
+                if (!state.mockTest.isActive || state.mockTest.isSubmitted) {
+                    clearInterval(mockTimerInterval);
+                    mockTimerInterval = null;
+                    return;
+                }
+                state.mockTest.remainingSeconds -= 1;
+                updateMockTimerDisplay();
+                if (state.mockTest.remainingSeconds <= 0) {
+                    state.mockTest.remainingSeconds = 0;
+                    updateMockTimerDisplay();
+                    submitMockTest(true);
+                }
+            }, 1000);
+        }
+
+        function startMockTest() {
+            const allIndexes = Array.from({ length: database.questions.length }, (_, i) => i);
+            state.mockTest.questions = shuffleArray(allIndexes).slice(0, 50);
+            state.mockTest.currentIndex = 0;
+            state.mockTest.answers = {};
+            state.mockTest.remainingSeconds = 50 * 60;
+            state.mockTest.isActive = true;
+            state.mockTest.isSubmitted = false;
+            state.mockTest.score = 0;
+            state.mockTest.reviewCorrect = [];
+            state.mockTest.reviewWrong = [];
+            state.mockTest.reviewTab = 'correct';
+            state.mockTest.reviewPage = 1;
+
+            document.getElementById('mockResult').classList.add('hidden');
+            document.getElementById('mockExamPanel').classList.remove('hidden');
+            document.getElementById('btnSubmitMock').classList.remove('hidden');
+            document.getElementById('btnStartMock').innerHTML = '<i class="fas fa-rotate-right mr-2"></i>Làm Lại Bộ Đề';
+
+            updateMockTimerDisplay();
+            startMockTimer();
+            renderMockTest();
+        }
+
+        function renderMockTest() {
+            if (!state.mockTest.isActive || state.mockTest.questions.length === 0) {
+                return;
+            }
+
+            const questionPoolIndex = state.mockTest.questions[state.mockTest.currentIndex];
+            const q = database.questions[questionPoolIndex];
+            const correctSet = parseCorrectAnswers(q.answer);
+            document.getElementById('mockQuestion').textContent = q.question;
+            document.getElementById('mockSelectHint').textContent = `Chọn ${correctSet.size} đáp án`;
+            document.getElementById('mockIndex').textContent = state.mockTest.currentIndex + 1;
+
+            const answeredCount = Object.values(state.mockTest.answers).filter(v => normalizeSelection(v).size > 0).length;
+            document.getElementById('mockAnswered').textContent = answeredCount;
+            document.getElementById('mockProgressBar').style.width = `${Math.round((answeredCount / 50) * 100)}%`;
+
+            const selectedSet = normalizeSelection(state.mockTest.answers[state.mockTest.currentIndex]);
+
+            document.querySelectorAll('.mock-option').forEach((btn, i) => {
+                const optionText = q.options[i].substring(3);
+                btn.querySelector('.mock-option-text').textContent = optionText;
+                btn.classList.remove('correct', 'wrong');
+                btn.style.borderColor = 'transparent';
+                btn.style.backgroundColor = '';
+
+                if (selectedSet.has(btn.dataset.option)) {
+                    btn.style.borderColor = '#FF69B4';
+                    btn.style.backgroundColor = '#FFE4E1';
+                }
+            });
+        }
+
+        function renderMockReview() {
+            const reviewContainer = document.getElementById('mockReviewList');
+            const title = document.getElementById('mockReviewTitle');
+            const perPage = 10;
+
+            document.getElementById('mockCorrectCount').textContent = state.mockTest.reviewCorrect.length;
+            document.getElementById('mockWrongCount').textContent = state.mockTest.reviewWrong.length;
+
+            const isCorrectTab = state.mockTest.reviewTab === 'correct';
+            const source = isCorrectTab ? state.mockTest.reviewCorrect : state.mockTest.reviewWrong;
+            const totalPages = Math.max(1, Math.ceil(source.length / perPage));
+
+            if (state.mockTest.reviewPage > totalPages) {
+                state.mockTest.reviewPage = totalPages;
+            }
+            if (state.mockTest.reviewPage < 1) {
+                state.mockTest.reviewPage = 1;
+            }
+
+            document.getElementById('mockReviewPage').textContent = state.mockTest.reviewPage;
+            document.getElementById('mockReviewTotalPages').textContent = totalPages;
+
+            const start = (state.mockTest.reviewPage - 1) * perPage;
+            const pageItems = source.slice(start, start + perPage);
+
+            const tabCorrect = document.getElementById('mockTabCorrect');
+            const tabWrong = document.getElementById('mockTabWrong');
+
+            if (isCorrectTab) {
+                tabCorrect.className = 'px-3 py-2 rounded-xl text-sm font-bold bg-green-500 text-white border-2 border-green-600';
+                tabWrong.className = 'px-3 py-2 rounded-xl text-sm font-bold bg-red-100 text-red-700 border-2 border-red-300';
+                title.className = 'font-bold text-green-700 mb-2';
+                title.textContent = 'Danh sách câu đúng (10 câu/trang)';
+            } else {
+                tabCorrect.className = 'px-3 py-2 rounded-xl text-sm font-bold bg-green-100 text-green-700 border-2 border-green-300';
+                tabWrong.className = 'px-3 py-2 rounded-xl text-sm font-bold bg-red-500 text-white border-2 border-red-600';
+                title.className = 'font-bold text-red-700 mb-2';
+                title.textContent = 'Danh sách câu sai (10 câu/trang, có thể note *)';
+            }
+
+            if (pageItems.length === 0) {
+                reviewContainer.innerHTML = isCorrectTab
+                    ? '<div class="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-xl p-3">Chưa có câu đúng.</div>'
+                    : '<div class="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-xl p-3">Không có câu sai, xuất sắc luôn! 🎉</div>';
+                return;
+            }
+
+            if (isCorrectTab) {
+                reviewContainer.innerHTML = pageItems.map(item => `
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-3">
+                        <p class="text-xs text-green-700 font-semibold mb-1">Trang ${Math.floor((item.examNo - 1) / 10) + 1} - Câu ${item.examNo}</p>
+                        <p class="text-sm text-gray-700 mb-1">${item.question}</p>
+                        <p class="text-xs text-green-700 font-bold">Đáp án: ${item.correct}</p>
+                    </div>
+                `).join('');
+            } else {
+                reviewContainer.innerHTML = pageItems.map(item => {
+                    const isMarked = state.marked.has(item.questionIndex);
+                    return `
+                        <div class="bg-red-50 border border-red-200 rounded-xl p-3">
+                            <div class="flex items-start justify-between gap-2">
+                                <p class="text-xs text-red-700 font-semibold">Trang ${Math.floor((item.examNo - 1) / 10) + 1} - Câu ${item.examNo}</p>
+                                <button onclick="toggleMarkedQuestionFromMock(${item.questionIndex})" class="text-yellow-600 text-sm font-bold px-2 py-1 rounded-lg ${isMarked ? 'bg-yellow-100 border border-yellow-300' : 'bg-white border border-gray-200'}">
+                                    ${isMarked ? '★ Đã note' : '☆ Note *'}
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-700 my-1">${item.question}</p>
+                            <p class="text-xs text-gray-600">Bạn chọn: <span class="font-bold">${item.selected || 'Chưa chọn'}</span></p>
+                            <p class="text-xs text-green-700 font-bold">Đáp án đúng: ${item.correct}</p>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function setMockReviewTab(tab) {
+            state.mockTest.reviewTab = tab;
+            state.mockTest.reviewPage = 1;
+            renderMockReview();
+        }
+
+        function changeMockReviewPage(delta) {
+            state.mockTest.reviewPage += delta;
+            renderMockReview();
+        }
+
+        function toggleMarkedQuestionFromMock(questionIndex) {
+            if (state.marked.has(questionIndex)) {
+                state.marked.delete(questionIndex);
+            } else {
+                state.marked.add(questionIndex);
+            }
+            saveState();
+            updateProgress();
+            renderMockReview();
+            showNotification(state.marked.has(questionIndex) ? '⭐ Đã note câu sai' : '⭐ Đã bỏ note');
+        }
+
+        function submitMockTest(isAutoSubmit = false) {
+            if (!state.mockTest.isActive || state.mockTest.isSubmitted) {
+                return;
+            }
+
+            let score = 0;
+            const reviewCorrect = [];
+            const reviewWrong = [];
+
+            state.mockTest.questions.forEach((questionIndex, examIndex) => {
+                const selectedSet = normalizeSelection(state.mockTest.answers[examIndex]);
+                const correctSet = parseCorrectAnswers(database.questions[questionIndex].answer);
+                const selected = Array.from(selectedSet).join(', ');
+                const correct = Array.from(correctSet).join(', ');
+                if (isCorrectSelection(selectedSet, correctSet)) {
+                    score += 1;
+                    reviewCorrect.push({
+                        examNo: examIndex + 1,
+                        questionIndex,
+                        question: database.questions[questionIndex].question,
+                        selected,
+                        correct
+                    });
+                } else {
+                    reviewWrong.push({
+                        examNo: examIndex + 1,
+                        questionIndex,
+                        question: database.questions[questionIndex].question,
+                        selected,
+                        correct
+                    });
+                }
+            });
+
+            state.mockTest.score = score;
+            state.mockTest.reviewCorrect = reviewCorrect;
+            state.mockTest.reviewWrong = reviewWrong;
+            state.mockTest.isSubmitted = true;
+            state.mockTest.isActive = false;
+
+            if (mockTimerInterval) {
+                clearInterval(mockTimerInterval);
+                mockTimerInterval = null;
+            }
+
+            document.getElementById('mockScore').textContent = score;
+            document.getElementById('mockPercent').textContent = Math.round((score / 50) * 100);
+            document.getElementById('mockExamPanel').classList.add('hidden');
+            document.getElementById('btnSubmitMock').classList.add('hidden');
+            document.getElementById('mockResult').classList.remove('hidden');
+            renderMockReview();
+
+            showNotification(isAutoSubmit ? '⏰ Hết giờ! Đã tự nộp bài.' : '🎉 Đã nộp bài thành công!', isAutoSubmit ? '⏰' : '🎉');
+        }
+
+        document.getElementById('btnStartMock').addEventListener('click', () => {
+            startMockTest();
+        });
+
+        document.getElementById('btnSubmitMock').addEventListener('click', () => {
+            submitMockTest(false);
+        });
+
+        document.getElementById('btnRestartMock').addEventListener('click', () => {
+            startMockTest();
+        });
+
+        document.getElementById('btnPrevMock').addEventListener('click', () => {
+            if (!state.mockTest.isActive) return;
+            if (state.mockTest.currentIndex > 0) {
+                state.mockTest.currentIndex -= 1;
+                renderMockTest();
+            }
+        });
+
+        document.getElementById('btnNextMock').addEventListener('click', () => {
+            if (!state.mockTest.isActive) return;
+            if (state.mockTest.currentIndex < 49) {
+                state.mockTest.currentIndex += 1;
+                renderMockTest();
+            }
+        });
+
+        document.querySelectorAll('.mock-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!state.mockTest.isActive || state.mockTest.isSubmitted) return;
+
+                const questionIndex = state.mockTest.questions[state.mockTest.currentIndex];
+                const q = database.questions[questionIndex];
+                const correctSet = parseCorrectAnswers(q.answer);
+                const requiredCount = Math.max(correctSet.size, 1);
+
+                const selectedSet = normalizeSelection(state.mockTest.answers[state.mockTest.currentIndex]);
+                if (selectedSet.has(this.dataset.option)) {
+                    selectedSet.delete(this.dataset.option);
+                } else {
+                    if (selectedSet.size >= requiredCount) {
+                        showNotification(`Câu này chỉ chọn tối đa ${requiredCount} đáp án`, 'ℹ️');
+                        return;
+                    }
+                    selectedSet.add(this.dataset.option);
+                }
+
+                state.mockTest.answers[state.mockTest.currentIndex] = Array.from(selectedSet).sort();
+                renderMockTest();
+            });
         });
 
         // ==================== MARKED QUESTIONS TAB ====================
@@ -761,8 +1185,11 @@
                     showTab(tabName);
                     
                     if (tabName === 'home') renderHome();
-                    else if (tabName === 'flashcard') renderFlashcard();
                     else if (tabName === 'quiz') renderQuiz();
+                    else if (tabName === 'mock') {
+                        updateMockTimerDisplay();
+                        renderMockTest();
+                    }
                     else if (tabName === 'marked') renderMarked();
                 });
             });
