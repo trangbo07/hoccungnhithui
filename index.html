@@ -433,16 +433,16 @@
                             <p id="mockSelectHint" class="text-sm text-pink-500 mb-3">Chọn 1 đáp án</p>
                             <div class="space-y-3">
                                 <button class="option-btn mock-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="A">
-                                    <span class="mr-3 font-bold">A.</span><span class="mock-option-text"></span>
+                                    <span class="mock-option-label mr-3 font-bold">A.</span><span class="mock-option-text"></span>
                                 </button>
                                 <button class="option-btn mock-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="B">
-                                    <span class="mr-3 font-bold">B.</span><span class="mock-option-text"></span>
+                                    <span class="mock-option-label mr-3 font-bold">B.</span><span class="mock-option-text"></span>
                                 </button>
                                 <button class="option-btn mock-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="C">
-                                    <span class="mr-3 font-bold">C.</span><span class="mock-option-text"></span>
+                                    <span class="mock-option-label mr-3 font-bold">C.</span><span class="mock-option-text"></span>
                                 </button>
                                 <button class="option-btn mock-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="D">
-                                    <span class="mr-3 font-bold">D.</span><span class="mock-option-text"></span>
+                                    <span class="mock-option-label mr-3 font-bold">D.</span><span class="mock-option-text"></span>
                                 </button>
                             </div>
                         </div>
@@ -612,6 +612,7 @@
                 questions: [],
                 currentIndex: 0,
                 answers: {},
+                optionOrders: {},
                 remainingSeconds: 50 * 60,
                 isActive: false,
                 isSubmitted: false,
@@ -752,6 +753,81 @@
                 [copy[i], copy[j]] = [copy[j], copy[i]];
             }
             return copy;
+        }
+
+        function stripOptionPrefix(optionText) {
+            const raw = String(optionText || '').trim();
+            return raw.replace(/^[A-D]\.(\s+)?/i, '').trim();
+        }
+
+        function buildMockOptionOrder(questionIndex) {
+            const q = database.questions[questionIndex];
+            const baseOptions = q.options.map((opt, i) => ({
+                originalLetter: String.fromCharCode(65 + i),
+                text: stripOptionPrefix(opt)
+            }));
+            const correctSet = parseCorrectAnswers(q.answer);
+            let displayOptions = [];
+            let displayToOriginal = {};
+            let originalToDisplay = {};
+
+            for (let attempt = 0; attempt < 6; attempt += 1) {
+                const shuffled = shuffleArray(baseOptions);
+                displayOptions = shuffled.map((opt, i) => ({
+                    displayLetter: String.fromCharCode(65 + i),
+                    originalLetter: opt.originalLetter,
+                    text: opt.text
+                }));
+                displayToOriginal = {};
+                originalToDisplay = {};
+                displayOptions.forEach(opt => {
+                    displayToOriginal[opt.displayLetter] = opt.originalLetter;
+                    originalToDisplay[opt.originalLetter] = opt.displayLetter;
+                });
+
+                const anyCorrectMoved = Array.from(correctSet).some(letter => originalToDisplay[letter] !== letter);
+                if (anyCorrectMoved) {
+                    break;
+                }
+            }
+
+            return { displayOptions, displayToOriginal, originalToDisplay };
+        }
+
+        function getMockOptionOrder(examIndex, questionIndex) {
+            if (!state.mockTest.optionOrders) {
+                state.mockTest.optionOrders = {};
+            }
+            if (!state.mockTest.optionOrders[examIndex]) {
+                state.mockTest.optionOrders[examIndex] = buildMockOptionOrder(questionIndex);
+            }
+            return state.mockTest.optionOrders[examIndex];
+        }
+
+        function mapMockSelectionToOriginal(examIndex, selectedDisplaySet) {
+            const order = state.mockTest.optionOrders?.[examIndex];
+            if (!order || !order.displayToOriginal) {
+                return new Set(selectedDisplaySet);
+            }
+            const mapped = new Set();
+            selectedDisplaySet.forEach(letter => {
+                const original = order.displayToOriginal[letter];
+                if (original) mapped.add(original);
+            });
+            return mapped;
+        }
+
+        function mapMockCorrectToDisplay(examIndex, correctSet) {
+            const order = state.mockTest.optionOrders?.[examIndex];
+            if (!order || !order.originalToDisplay) {
+                return new Set(correctSet);
+            }
+            const mapped = new Set();
+            correctSet.forEach(letter => {
+                const display = order.originalToDisplay[letter];
+                if (display) mapped.add(display);
+            });
+            return mapped;
         }
 
         function parseCorrectAnswers(answerValue) {
@@ -995,6 +1071,7 @@
             state.mockTest.questions = shuffleArray(allIndexes).slice(0, count);
             state.mockTest.currentIndex = 0;
             state.mockTest.answers = {};
+            state.mockTest.optionOrders = {};
             state.mockTest.remainingSeconds = state.mockTest.settings.minutes * 60;
             state.mockTest.isActive = true;
             state.mockTest.isSubmitted = false;
@@ -1003,6 +1080,10 @@
             state.mockTest.reviewWrong = [];
             state.mockTest.reviewTab = 'correct';
             state.mockTest.reviewPage = 1;
+
+            state.mockTest.questions.forEach((questionIndex, examIndex) => {
+                state.mockTest.optionOrders[examIndex] = buildMockOptionOrder(questionIndex);
+            });
 
             document.getElementById('mockResult').classList.add('hidden');
             document.getElementById('mockExamPanel').classList.remove('hidden');
@@ -1023,6 +1104,7 @@
             const questionPoolIndex = state.mockTest.questions[state.mockTest.currentIndex];
             const q = database.questions[questionPoolIndex];
             const correctSet = parseCorrectAnswers(q.answer);
+            const optionOrder = getMockOptionOrder(state.mockTest.currentIndex, questionPoolIndex);
             document.getElementById('mockQuestion').textContent = q.question;
             document.getElementById('mockSelectHint').textContent = `Chọn ${correctSet.size} đáp án`;
             document.getElementById('mockIndex').textContent = state.mockTest.currentIndex + 1;
@@ -1035,7 +1117,15 @@
             const selectedSet = normalizeSelection(state.mockTest.answers[state.mockTest.currentIndex]);
 
             document.querySelectorAll('.mock-option').forEach((btn, i) => {
-                const optionText = q.options[i].substring(3);
+                const mappedOption = optionOrder.displayOptions[i];
+                const optionText = mappedOption ? mappedOption.text : stripOptionPrefix(q.options[i]);
+                const originalLetter = mappedOption ? mappedOption.originalLetter : String.fromCharCode(65 + i);
+                const displayLetter = mappedOption ? mappedOption.displayLetter : String.fromCharCode(65 + i);
+                btn.dataset.original = originalLetter;
+                const label = btn.querySelector('.mock-option-label');
+                if (label) {
+                    label.textContent = `${displayLetter}.`;
+                }
                 btn.querySelector('.mock-option-text').textContent = optionText;
                 btn.classList.remove('correct', 'wrong');
                 btn.style.borderColor = 'transparent';
@@ -1162,10 +1252,12 @@
             const reviewWrong = [];
 
             state.mockTest.questions.forEach((questionIndex, examIndex) => {
-                const selectedSet = normalizeSelection(state.mockTest.answers[examIndex]);
+                const selectedDisplaySet = normalizeSelection(state.mockTest.answers[examIndex]);
+                const selectedSet = mapMockSelectionToOriginal(examIndex, selectedDisplaySet);
                 const correctSet = parseCorrectAnswers(database.questions[questionIndex].answer);
-                const selected = Array.from(selectedSet).join(', ');
-                const correct = Array.from(correctSet).join(', ');
+                const displayCorrectSet = mapMockCorrectToDisplay(examIndex, correctSet);
+                const selected = Array.from(selectedDisplaySet).sort().join(', ');
+                const correct = Array.from(displayCorrectSet).sort().join(', ');
                 if (isCorrectSelection(selectedSet, correctSet)) {
                     score += 1;
                     reviewCorrect.push({
