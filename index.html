@@ -83,6 +83,7 @@
             border: 2px solid #F9A8D4;
             background: linear-gradient(135deg, #FFF7FB 0%, #FFF0F6 100%);
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
         }
         .option-btn:hover {
             transform: translateY(-4px);
@@ -90,12 +91,24 @@
             box-shadow: 0 8px 16px rgba(255, 105, 180, 0.4);
         }
         .option-btn.correct {
-            background-color: #90EE90 !important;
+            background-color: #FFFFFF !important;
+            border-color: #22C55E !important;
+            color: #166534 !important;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.45), 0 10px 18px rgba(34, 197, 94, 0.25);
             animation: correctPulse 0.6s ease-out;
         }
         .option-btn.wrong {
-            background-color: #FFB6C1 !important;
+            background-color: #FFFFFF !important;
+            border-color: #EF4444 !important;
+            color: #7F1D1D !important;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.45), 0 10px 18px rgba(239, 68, 68, 0.25);
             animation: wrongShake 0.4s ease-out;
+        }
+        .option-btn.correct .option-text,
+        .option-btn.wrong .option-text,
+        .option-btn.correct .mock-option-text,
+        .option-btn.wrong .mock-option-text {
+            font-weight: 700;
         }
         @keyframes correctPulse {
             0% { transform: scale(1); }
@@ -234,6 +247,9 @@
                 </button>
                 <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="marked">
                     <i class="fas fa-star mr-2"></i>Câu Của Nhi
+                </button>
+                <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="note">
+                    <i class="fas fa-dumbbell mr-2"></i>Luyện Tập Note
                 </button>
                 <button class="tab-btn tab-inactive px-6 py-2 rounded-full font-semibold whitespace-nowrap transition" data-tab="search">
                     <i class="fas fa-search mr-2"></i>Tìm Kiếm
@@ -380,7 +396,17 @@
                                 <span id="mockTimer">50:00</span>
                             </div>
                         </div>
-                        <p class="text-sm text-gray-600 mb-4">Bốc ngẫu nhiên 50 câu và làm trong 50 phút. Hết giờ sẽ tự nộp bài.</p>
+                        <p class="text-sm text-gray-600 mb-4">Bốc ngẫu nhiên <span id="mockSummaryCount">50</span> câu và làm trong <span id="mockSummaryMinutes">50</span> phút. Hết giờ sẽ tự nộp bài.</p>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <label class="text-sm text-gray-700 font-semibold">
+                                Số câu (1-225)
+                                <input id="mockCountInput" type="number" min="1" max="225" class="search-input w-full px-4 py-2 mt-1" value="50">
+                            </label>
+                            <label class="text-sm text-gray-700 font-semibold">
+                                Thời gian (phút)
+                                <input id="mockMinutesInput" type="number" min="1" max="180" class="search-input w-full px-4 py-2 mt-1" value="50">
+                            </label>
+                        </div>
                         <div class="flex gap-3 flex-wrap">
                             <button id="btnStartMock" class="pink-gradient text-white px-5 py-3 rounded-2xl font-bold shadow-lg">
                                 <i class="fas fa-play mr-2"></i>Bắt Đầu Thi
@@ -394,8 +420,8 @@
                     <div id="mockExamPanel" class="hidden">
                         <div class="mb-4 bg-white rounded-2xl p-4 card-glow">
                             <div class="flex justify-between mb-2">
-                                <span class="font-semibold text-gray-700">Tiến độ: <span id="mockAnswered">0</span>/50</span>
-                                <span class="text-sm text-gray-600">Câu <span id="mockIndex">1</span>/50</span>
+                                <span class="font-semibold text-gray-700">Tiến độ: <span id="mockAnswered">0</span>/<span id="mockTotalCount">50</span></span>
+                                <span class="text-sm text-gray-600">Câu <span id="mockIndex">1</span>/<span id="mockTotalIndex">50</span></span>
                             </div>
                             <div class="relative h-3 bg-pink-100 rounded-full overflow-hidden">
                                 <div id="mockProgressBar" class="h-full bg-gradient-to-r from-pink-400 to-pink-500 rounded-full transition-all duration-300" style="width: 0%"></div>
@@ -434,7 +460,7 @@
                     <div id="mockResult" class="hidden bg-white rounded-3xl p-6 card-glow text-center">
                         <div class="text-5xl mb-3">🎓</div>
                         <h3 class="text-2xl font-bold text-pink-600 mb-2">Kết Quả Thi Thử</h3>
-                        <p class="text-lg font-semibold text-gray-700 mb-2">Điểm: <span id="mockScore">0</span>/50</p>
+                        <p class="text-lg font-semibold text-gray-700 mb-2">Điểm: <span id="mockScore">0</span>/<span id="mockScoreTotal">50</span></p>
                         <p class="text-base text-gray-600 mb-4">Tỷ lệ đúng: <span id="mockPercent">0</span>%</p>
                         <div class="grid grid-cols-2 gap-3 mb-4 text-left">
                             <div class="bg-green-50 border-2 border-green-300 rounded-2xl p-3">
@@ -494,6 +520,49 @@
                 </div>
             </div>
 
+            <!-- NOTE PRACTICE TAB -->
+            <div id="noteTab" class="tab-content hidden">
+                <div>
+                    <h2 class="text-2xl font-bold text-pink-600 mb-4">
+                        <i class="fas fa-dumbbell mr-2"></i>Luyện Tập Note
+                    </h2>
+                    <div class="bg-white rounded-3xl p-6 card-glow mb-6">
+                        <div class="flex items-center justify-between gap-3 mb-3">
+                            <h3 class="text-lg font-bold text-pink-600">🧠 Luyện Tập Note</h3>
+                            <button id="btnStartNotePractice" class="pink-gradient text-white px-4 py-2 rounded-2xl font-bold shadow-lg">
+                                <i class="fas fa-play mr-2"></i>Bắt Đầu
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-600">Luyện tập các câu đã note. Trả lời xong có thể bỏ note nếu đã thuộc.</p>
+
+                        <div id="notePracticePanel" class="hidden mt-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-sm text-gray-600">Câu <span id="notePracticeIndex">1</span>/<span id="notePracticeTotal">0</span></span>
+                                <span class="text-sm text-gray-600">Đúng: <span id="notePracticeCorrect">0</span> | Sai: <span id="notePracticeWrong">0</span></span>
+                            </div>
+                            <div class="bg-pink-50 border-2 border-pink-200 rounded-2xl p-4 mb-4">
+                                <p id="notePracticeQuestion" class="text-base font-bold text-pink-700">Câu hỏi luyện tập</p>
+                            </div>
+                            <div id="notePracticeOptions" class="space-y-3"></div>
+
+                            <div id="notePracticeFeedback" class="hidden text-center mt-4 mini-notification">
+                                <div class="text-4xl mb-2" id="notePracticeIcon">🎉</div>
+                                <p id="notePracticeText" class="font-bold text-lg text-green-600">Chính xác!</p>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-4">
+                                <button id="btnRemoveNotePractice" class="text-pink-600 text-sm font-semibold hover:text-pink-700">
+                                    🧹 Bỏ note câu này
+                                </button>
+                                <button id="btnNextNotePractice" class="bg-pink-200 text-pink-600 px-4 py-2 rounded-xl font-semibold">
+                                    Câu tiếp <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- SEARCH TAB -->
             <div id="searchTab" class="tab-content hidden">
                 <div>
@@ -528,9 +597,17 @@
         let state = {
             currentQuizIndex: 0,
             completed: new Set(),
-            marked: new Set(),
+            notes: {},
             quizAnswers: new Map(),
+            quizResults: new Map(),
             currentTab: 'home',
+            notePractice: {
+                order: [],
+                currentIndex: 0,
+                correct: 0,
+                wrong: 0,
+                isActive: false
+            },
             mockTest: {
                 questions: [],
                 currentIndex: 0,
@@ -542,11 +619,16 @@
                 reviewCorrect: [],
                 reviewWrong: [],
                 reviewTab: 'correct',
-                reviewPage: 1
+                reviewPage: 1,
+                settings: {
+                    count: 50,
+                    minutes: 50
+                }
             }
         };
         let mockTimerInterval = null;
         let quizPendingSelections = new Set();
+        let notePracticePendingSelections = new Set();
 
         // ==================== INITIALIZE ====================
         async function init() {
@@ -554,6 +636,7 @@
                 const response = await fetch('database.json');
                 database = await response.json();
                 loadState();
+                syncMockSettingsToUI();
                 renderHome();
                 setupEventListeners();
             } catch (e) {
@@ -568,8 +651,20 @@
                 const parsed = JSON.parse(saved);
                 state.currentQuizIndex = parsed.currentQuizIndex || 0;
                 state.completed = new Set(parsed.completed || []);
-                state.marked = new Set(parsed.marked || []);
+                state.notes = parsed.notes || {};
                 state.quizAnswers = new Map(parsed.quizAnswers || []);
+                state.quizResults = new Map(parsed.quizResults || []);
+                if (parsed.mockSettings) {
+                    state.mockTest.settings = parsed.mockSettings;
+                }
+                if (parsed.marked && Array.isArray(parsed.marked)) {
+                    parsed.marked.forEach(idx => {
+                        const key = String(idx);
+                        if (!state.notes[key]) {
+                            state.notes[key] = { type: 'manual', source: 'legacy' };
+                        }
+                    });
+                }
             }
         }
 
@@ -577,10 +672,35 @@
             const toSave = {
                 currentQuizIndex: state.currentQuizIndex,
                 completed: Array.from(state.completed),
-                marked: Array.from(state.marked),
-                quizAnswers: Array.from(state.quizAnswers)
+                notes: state.notes,
+                quizAnswers: Array.from(state.quizAnswers),
+                quizResults: Array.from(state.quizResults),
+                mockSettings: state.mockTest.settings
             };
             localStorage.setItem('hocLichSuState', JSON.stringify(toSave));
+        }
+
+        function getNoteEntry(questionIndex) {
+            return state.notes[String(questionIndex)] || null;
+        }
+
+        function setNote(questionIndex, type, source = 'manual') {
+            state.notes[String(questionIndex)] = { type, source, updatedAt: Date.now() };
+        }
+
+        function removeNote(questionIndex) {
+            delete state.notes[String(questionIndex)];
+        }
+
+        function noteCount() {
+            return Object.keys(state.notes).length;
+        }
+
+        function noteLabel(entry) {
+            if (!entry || !entry.type) return 'Note';
+            if (entry.type === 'correct') return 'Note đúng';
+            if (entry.type === 'wrong') return 'Note sai';
+            return 'Note';
         }
 
         // ==================== UI HELPERS ====================
@@ -605,7 +725,7 @@
             document.getElementById('progressPercent').textContent = percent;
             document.getElementById('progressBar').style.width = percent + '%';
             document.getElementById('statCompleted').textContent = completed;
-            document.getElementById('statMarked').textContent = state.marked.size;
+            document.getElementById('statMarked').textContent = noteCount();
 
             // Update badges
             document.getElementById('badge1').style.opacity = completed >= 50 ? '1' : '0.5';
@@ -714,8 +834,9 @@
             document.getElementById('quizFeedback').classList.add('hidden');
             
             // Update mark button
-            const isMarked = state.marked.has(state.currentQuizIndex);
-            document.getElementById('btnMarkQuiz').className = isMarked ? 'fas fa-star star-icon marked' : 'far fa-star star-icon';
+            const noteEntry = getNoteEntry(state.currentQuizIndex);
+            const isNoted = Boolean(noteEntry);
+            document.getElementById('btnMarkQuiz').className = isNoted ? 'fas fa-star star-icon marked' : 'far fa-star star-icon';
         }
 
         document.querySelectorAll('.quiz-option').forEach(btn => {
@@ -775,6 +896,9 @@
                     document.getElementById('feedbackText').textContent = 'Sai rồi, cố gắng lần sau!';
                     document.getElementById('feedbackText').className = 'font-bold text-lg text-red-600';
                 }
+
+                state.quizAnswers.set(state.currentQuizIndex, Array.from(quizPendingSelections).sort());
+                state.quizResults.set(state.currentQuizIndex, isCorrect);
                 
                 saveState();
                 updateProgress();
@@ -800,19 +924,44 @@
 
         document.getElementById('btnMarkQuiz').addEventListener('click', function(e) {
             e.stopPropagation();
-            if (state.marked.has(state.currentQuizIndex)) {
-                state.marked.delete(state.currentQuizIndex);
+            const currentIndex = state.currentQuizIndex;
+            const noteEntry = getNoteEntry(currentIndex);
+            if (noteEntry) {
+                removeNote(currentIndex);
                 this.className = 'far fa-star star-icon';
             } else {
-                state.marked.add(state.currentQuizIndex);
+                const result = state.quizResults.get(currentIndex);
+                const noteType = result === true ? 'correct' : (result === false ? 'wrong' : 'manual');
+                setNote(currentIndex, noteType, 'quiz');
                 this.className = 'fas fa-star star-icon marked';
             }
             saveState();
             updateProgress();
-            showNotification(state.marked.has(state.currentQuizIndex) ? '⭐ Đã đánh dấu!' : '⭐ Bỏ đánh dấu');
+            showNotification(getNoteEntry(currentIndex) ? '⭐ Đã note!' : '⭐ Bỏ note');
         });
 
         // ==================== MOCK TEST TAB ====================
+        function syncMockSettingsToUI() {
+            const count = state.mockTest.settings.count;
+            const minutes = state.mockTest.settings.minutes;
+            document.getElementById('mockCountInput').value = count;
+            document.getElementById('mockMinutesInput').value = minutes;
+            document.getElementById('mockSummaryCount').textContent = count;
+            document.getElementById('mockSummaryMinutes').textContent = minutes;
+            document.getElementById('mockTotalCount').textContent = count;
+            document.getElementById('mockTotalIndex').textContent = count;
+            document.getElementById('mockScoreTotal').textContent = count;
+        }
+
+        function readMockSettings() {
+            const rawCount = parseInt(document.getElementById('mockCountInput').value, 10);
+            const rawMinutes = parseInt(document.getElementById('mockMinutesInput').value, 10);
+            const count = Math.min(Math.max(rawCount || state.mockTest.settings.count, 1), database.questions.length);
+            const minutes = Math.min(Math.max(rawMinutes || state.mockTest.settings.minutes, 1), 180);
+            state.mockTest.settings = { count, minutes };
+            syncMockSettingsToUI();
+        }
+
         function updateMockTimerDisplay() {
             const minutes = Math.floor(state.mockTest.remainingSeconds / 60);
             const seconds = state.mockTest.remainingSeconds % 60;
@@ -840,11 +989,13 @@
         }
 
         function startMockTest() {
+            readMockSettings();
+            const count = state.mockTest.settings.count;
             const allIndexes = Array.from({ length: database.questions.length }, (_, i) => i);
-            state.mockTest.questions = shuffleArray(allIndexes).slice(0, 50);
+            state.mockTest.questions = shuffleArray(allIndexes).slice(0, count);
             state.mockTest.currentIndex = 0;
             state.mockTest.answers = {};
-            state.mockTest.remainingSeconds = 50 * 60;
+            state.mockTest.remainingSeconds = state.mockTest.settings.minutes * 60;
             state.mockTest.isActive = true;
             state.mockTest.isSubmitted = false;
             state.mockTest.score = 0;
@@ -861,6 +1012,7 @@
             updateMockTimerDisplay();
             startMockTimer();
             renderMockTest();
+            saveState();
         }
 
         function renderMockTest() {
@@ -877,7 +1029,8 @@
 
             const answeredCount = Object.values(state.mockTest.answers).filter(v => normalizeSelection(v).size > 0).length;
             document.getElementById('mockAnswered').textContent = answeredCount;
-            document.getElementById('mockProgressBar').style.width = `${Math.round((answeredCount / 50) * 100)}%`;
+            const totalCount = state.mockTest.settings.count;
+            document.getElementById('mockProgressBar').style.width = `${Math.round((answeredCount / totalCount) * 100)}%`;
 
             const selectedSet = normalizeSelection(state.mockTest.answers[state.mockTest.currentIndex]);
 
@@ -945,20 +1098,25 @@
             if (isCorrectTab) {
                 reviewContainer.innerHTML = pageItems.map(item => `
                     <div class="bg-green-50 border border-green-200 rounded-xl p-3">
-                        <p class="text-xs text-green-700 font-semibold mb-1">Trang ${Math.floor((item.examNo - 1) / 10) + 1} - Câu ${item.examNo}</p>
-                        <p class="text-sm text-gray-700 mb-1">${item.question}</p>
+                        <div class="flex items-start justify-between gap-2">
+                            <p class="text-xs text-green-700 font-semibold">Trang ${Math.floor((item.examNo - 1) / 10) + 1} - Câu ${item.examNo}</p>
+                            <button onclick="toggleNoteFromMock(${item.questionIndex}, 'correct')" class="text-yellow-600 text-sm font-bold px-2 py-1 rounded-lg ${getNoteEntry(item.questionIndex)?.type === 'correct' ? 'bg-yellow-100 border border-yellow-300' : 'bg-white border border-gray-200'}">
+                                ${getNoteEntry(item.questionIndex)?.type === 'correct' ? '★ Đã note' : '☆ Note *'}
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-700 my-1">${item.question}</p>
                         <p class="text-xs text-green-700 font-bold">Đáp án: ${item.correct}</p>
                     </div>
                 `).join('');
             } else {
                 reviewContainer.innerHTML = pageItems.map(item => {
-                    const isMarked = state.marked.has(item.questionIndex);
+                    const noteEntry = getNoteEntry(item.questionIndex);
                     return `
                         <div class="bg-red-50 border border-red-200 rounded-xl p-3">
                             <div class="flex items-start justify-between gap-2">
                                 <p class="text-xs text-red-700 font-semibold">Trang ${Math.floor((item.examNo - 1) / 10) + 1} - Câu ${item.examNo}</p>
-                                <button onclick="toggleMarkedQuestionFromMock(${item.questionIndex})" class="text-yellow-600 text-sm font-bold px-2 py-1 rounded-lg ${isMarked ? 'bg-yellow-100 border border-yellow-300' : 'bg-white border border-gray-200'}">
-                                    ${isMarked ? '★ Đã note' : '☆ Note *'}
+                                <button onclick="toggleNoteFromMock(${item.questionIndex}, 'wrong')" class="text-yellow-600 text-sm font-bold px-2 py-1 rounded-lg ${noteEntry?.type === 'wrong' ? 'bg-yellow-100 border border-yellow-300' : 'bg-white border border-gray-200'}">
+                                    ${noteEntry?.type === 'wrong' ? '★ Đã note' : '☆ Note *'}
                                 </button>
                             </div>
                             <p class="text-sm text-gray-700 my-1">${item.question}</p>
@@ -981,16 +1139,17 @@
             renderMockReview();
         }
 
-        function toggleMarkedQuestionFromMock(questionIndex) {
-            if (state.marked.has(questionIndex)) {
-                state.marked.delete(questionIndex);
+        function toggleNoteFromMock(questionIndex, type) {
+            const entry = getNoteEntry(questionIndex);
+            if (entry && entry.type === type) {
+                removeNote(questionIndex);
             } else {
-                state.marked.add(questionIndex);
+                setNote(questionIndex, type, 'mock');
             }
             saveState();
             updateProgress();
             renderMockReview();
-            showNotification(state.marked.has(questionIndex) ? '⭐ Đã note câu sai' : '⭐ Đã bỏ note');
+            showNotification(getNoteEntry(questionIndex) ? '⭐ Đã note' : '⭐ Đã bỏ note');
         }
 
         function submitMockTest(isAutoSubmit = false) {
@@ -1039,7 +1198,8 @@
             }
 
             document.getElementById('mockScore').textContent = score;
-            document.getElementById('mockPercent').textContent = Math.round((score / 50) * 100);
+            const totalCount = state.mockTest.settings.count;
+            document.getElementById('mockPercent').textContent = Math.round((score / totalCount) * 100);
             document.getElementById('mockExamPanel').classList.add('hidden');
             document.getElementById('btnSubmitMock').classList.add('hidden');
             document.getElementById('mockResult').classList.remove('hidden');
@@ -1070,7 +1230,7 @@
 
         document.getElementById('btnNextMock').addEventListener('click', () => {
             if (!state.mockTest.isActive) return;
-            if (state.mockTest.currentIndex < 49) {
+            if (state.mockTest.currentIndex < state.mockTest.settings.count - 1) {
                 state.mockTest.currentIndex += 1;
                 renderMockTest();
             }
@@ -1104,7 +1264,8 @@
         // ==================== MARKED QUESTIONS TAB ====================
         function renderMarked() {
             const container = document.getElementById('markedList');
-            if (state.marked.size === 0) {
+            const noteIndexes = Object.keys(state.notes).map(Number).sort((a, b) => a - b);
+            if (noteIndexes.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 text-gray-500">
                         <i class="fas fa-inbox text-4xl mb-3 block opacity-50"></i>
@@ -1113,20 +1274,188 @@
                 `;
                 return;
             }
-            
-            container.innerHTML = Array.from(state.marked).map(idx => {
+
+            container.innerHTML = noteIndexes.map(idx => {
                 const q = database.questions[idx];
+                const noteEntry = getNoteEntry(idx);
+                const correctSet = parseCorrectAnswers(q.answer);
                 return `
                     <div class="bg-white rounded-2xl p-4 card-glow">
-                        <p class="font-semibold text-pink-600 mb-2">Câu ${idx + 1}</p>
-                        <p class="text-gray-700 mb-2">${q.question}</p>
-                        <p class="text-sm text-green-600 font-bold">✅ Đáp án: ${q.answer}</p>
-                        <button onclick="viewQuestionDetail(${idx})" class="mt-2 text-pink-600 text-sm font-semibold hover:text-pink-700">
-                            📖 Xem Chi Tiết
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="font-semibold text-pink-600">Câu ${idx + 1}</p>
+                            <span class="text-xs font-bold text-pink-700 bg-pink-100 px-2 py-1 rounded-full">${noteLabel(noteEntry)}</span>
+                        </div>
+                        <p class="text-gray-700 mb-3">${q.question}</p>
+                        <div class="space-y-2 mb-3">
+                            ${q.options.map((opt, i) => {
+                                const letter = String.fromCharCode(65 + i);
+                                const text = opt.substring(3);
+                                const isCorrect = correctSet.has(letter);
+                                return `
+                                    <div class="px-3 py-2 rounded-xl border text-sm ${isCorrect ? 'bg-green-50 border-green-300 text-green-700 font-bold' : 'bg-pink-50 border-pink-200 text-gray-700'}">
+                                        <span class="font-bold mr-2">${letter}.</span>${text}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        <p class="text-sm text-green-600 font-bold">✅ Đáp án đúng: ${q.answer}</p>
+                        <button onclick="removeNoteFromMarked(${idx})" class="mt-2 text-pink-600 text-sm font-semibold hover:text-pink-700">
+                            🧹 Bỏ note
                         </button>
                     </div>
                 `;
             }).join('');
+        }
+
+        function removeNoteFromMarked(questionIndex) {
+            removeNote(questionIndex);
+            saveState();
+            updateProgress();
+            renderMarked();
+            showNotification('⭐ Đã bỏ note');
+        }
+
+        // ==================== NOTE PRACTICE ====================
+        function buildNotePracticeOrder() {
+            const noteIndexes = Object.keys(state.notes).map(Number);
+            return shuffleArray(noteIndexes);
+        }
+
+        function startNotePractice() {
+            const order = buildNotePracticeOrder();
+            if (order.length === 0) {
+                showNotification('Chưa có câu note để luyện tập', 'ℹ️');
+                return;
+            }
+            state.notePractice.order = order;
+            state.notePractice.currentIndex = 0;
+            state.notePractice.correct = 0;
+            state.notePractice.wrong = 0;
+            state.notePractice.isActive = true;
+            notePracticePendingSelections = new Set();
+
+            document.getElementById('notePracticePanel').classList.remove('hidden');
+            renderNotePractice();
+        }
+
+        function renderNotePractice() {
+            if (!state.notePractice.isActive || state.notePractice.order.length === 0) {
+                return;
+            }
+
+            const questionIndex = state.notePractice.order[state.notePractice.currentIndex];
+            const q = database.questions[questionIndex];
+            const correctSet = parseCorrectAnswers(q.answer);
+
+            document.getElementById('notePracticeIndex').textContent = state.notePractice.currentIndex + 1;
+            document.getElementById('notePracticeTotal').textContent = state.notePractice.order.length;
+            document.getElementById('notePracticeCorrect').textContent = state.notePractice.correct;
+            document.getElementById('notePracticeWrong').textContent = state.notePractice.wrong;
+            document.getElementById('notePracticeQuestion').textContent = q.question;
+            document.getElementById('notePracticeFeedback').classList.add('hidden');
+
+            const optionsContainer = document.getElementById('notePracticeOptions');
+            optionsContainer.innerHTML = q.options.map((opt, i) => {
+                const letter = String.fromCharCode(65 + i);
+                const text = opt.substring(3);
+                return `
+                    <button class="option-btn note-option w-full p-4 rounded-2xl font-semibold text-left transition border-2 border-pink-200 text-gray-700" data-option="${letter}">
+                        <span class="mr-3 font-bold">${letter}.</span><span class="option-text">${text}</span>
+                    </button>
+                `;
+            }).join('');
+
+            notePracticePendingSelections = new Set();
+            document.querySelectorAll('.note-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.disabled) return;
+                    const selected = this.dataset.option;
+                    const requiredCount = Math.max(correctSet.size, 1);
+
+                    if (notePracticePendingSelections.has(selected)) {
+                        notePracticePendingSelections.delete(selected);
+                        this.style.borderColor = '';
+                        this.style.backgroundColor = '';
+                        return;
+                    }
+
+                    if (notePracticePendingSelections.size >= requiredCount) {
+                        showNotification(`Câu này chỉ chọn tối đa ${requiredCount} đáp án`, 'ℹ️');
+                        return;
+                    }
+
+                    notePracticePendingSelections.add(selected);
+                    this.style.borderColor = '#EC4899';
+                    this.style.backgroundColor = '#FDF2F8';
+
+                    if (notePracticePendingSelections.size < requiredCount) {
+                        return;
+                    }
+
+                    document.querySelectorAll('.note-option').forEach(b => b.disabled = true);
+                    const isCorrect = isCorrectSelection(notePracticePendingSelections, correctSet);
+
+                    if (isCorrect) {
+                        document.querySelectorAll('.note-option').forEach(b => {
+                            if (notePracticePendingSelections.has(b.dataset.option)) {
+                                b.classList.add('correct');
+                            }
+                        });
+                        state.notePractice.correct += 1;
+                        document.getElementById('notePracticeIcon').textContent = '🎉';
+                        document.getElementById('notePracticeText').textContent = 'Chính xác!';
+                        document.getElementById('notePracticeText').className = 'font-bold text-lg text-green-600';
+                    } else {
+                        document.querySelectorAll('.note-option').forEach(b => {
+                            const option = b.dataset.option;
+                            if (notePracticePendingSelections.has(option) && !correctSet.has(option)) {
+                                b.classList.add('wrong');
+                            }
+                            if (correctSet.has(option)) {
+                                b.classList.add('correct');
+                            }
+                        });
+                        state.notePractice.wrong += 1;
+                        document.getElementById('notePracticeIcon').textContent = '😿';
+                        document.getElementById('notePracticeText').textContent = 'Sai rồi, xem lại nhé!';
+                        document.getElementById('notePracticeText').className = 'font-bold text-lg text-red-600';
+                    }
+
+                    document.getElementById('notePracticeFeedback').classList.remove('hidden');
+                    document.getElementById('notePracticeCorrect').textContent = state.notePractice.correct;
+                    document.getElementById('notePracticeWrong').textContent = state.notePractice.wrong;
+                });
+            });
+        }
+
+        function nextNotePractice() {
+            if (!state.notePractice.isActive) return;
+            if (state.notePractice.currentIndex < state.notePractice.order.length - 1) {
+                state.notePractice.currentIndex += 1;
+                renderNotePractice();
+            } else {
+                showNotification('Đã luyện xong tất cả câu note!', '🎉');
+                state.notePractice.isActive = false;
+            }
+        }
+
+        function removeNoteFromPractice() {
+            if (!state.notePractice.isActive) return;
+            const questionIndex = state.notePractice.order[state.notePractice.currentIndex];
+            removeNote(questionIndex);
+            saveState();
+            updateProgress();
+            renderMarked();
+            showNotification('⭐ Đã bỏ note');
+
+            state.notePractice.order = buildNotePracticeOrder();
+            if (state.notePractice.order.length === 0) {
+                state.notePractice.isActive = false;
+                document.getElementById('notePracticePanel').classList.add('hidden');
+                return;
+            }
+            state.notePractice.currentIndex = 0;
+            renderNotePractice();
         }
 
         // ==================== SEARCH TAB ====================
@@ -1189,9 +1518,30 @@
                     else if (tabName === 'mock') {
                         updateMockTimerDisplay();
                         renderMockTest();
+                        syncMockSettingsToUI();
                     }
                     else if (tabName === 'marked') renderMarked();
+                    else if (tabName === 'note') renderNotePractice();
                 });
+            });
+
+            document.getElementById('mockCountInput').addEventListener('change', () => {
+                readMockSettings();
+                saveState();
+            });
+            document.getElementById('mockMinutesInput').addEventListener('change', () => {
+                readMockSettings();
+                saveState();
+            });
+
+            document.getElementById('btnStartNotePractice').addEventListener('click', () => {
+                startNotePractice();
+            });
+            document.getElementById('btnNextNotePractice').addEventListener('click', () => {
+                nextNotePractice();
+            });
+            document.getElementById('btnRemoveNotePractice').addEventListener('click', () => {
+                removeNoteFromPractice();
             });
         }
 
